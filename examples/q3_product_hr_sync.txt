@@ -1,0 +1,30 @@
+[Meeting: Q3 Product & HR Sync — July 14, 2025]
+Attendees: Sarah (Product Lead), James (Engineering Manager), Priya (HR), Kevin (Marketing), Raj (CTO)
+
+Sarah: Alright let's get started. We need to finalize the v2.4 release plan. James, where are we on the backend API changes?
+
+James: The core API refactor is 80% done. We should be able to wrap it up by July 22nd. But we're blocked on the authentication module — we're waiting on the security audit report from the external vendor.
+
+Raj: That audit was supposed to land last week. This is a problem. Without it, we cannot push to staging. James, can you follow up with them today?
+
+James: Yes, I'll reach out today.
+
+Sarah: We also need the updated product spec document finalized before the dev handoff. I'll handle that by July 17th.
+
+Kevin: For marketing, we're planning a soft launch announcement. I'll draft the blog post and social copy. Can we say July 21st for a first draft?
+
+Sarah: Works for me. Please coordinate with me before publishing anything externally.
+
+Priya: I need to flag something on the HR side. We've finalized the salary revision cycle. The new compensation bands are approved — engineering band goes up to ₹24 LPA at senior level. I'll send the updated offer letters to James by July 16th.
+
+Raj: Keep that strictly confidential — do not share those numbers outside this room.
+
+Priya: Understood. Also, we're onboarding two new engineers next Monday. Priya to send onboarding kits by July 15th.
+
+James: I'll assign them to Kevin's frontend team temporarily until the backend work stabilizes.
+
+Sarah: One more thing — we haven't decided who's owning the QA cycle for v2.4. It was discussed last time but never assigned.
+
+Raj: Let's flag that as unresolved. We need to decide in the next 24 hours.
+
+Sarah: Agreed. I'll send a follow-up note. Meeting adjourned.
