@@ -1,93 +1,120 @@
-# Meeting Agent Pipeline
+# 🧠 AI Meeting Agent Pipeline
 
-An enterprise-grade multi-agent AI system that converts raw meeting transcripts into structured, secure, and actionable workflow JSON.
+An **enterprise-grade multi-agent AI system** that transforms raw meeting transcripts into **structured, actionable, and secure workflow data**.
 
-## What it does
+Built with a modular agent architecture, this system simulates how real organizations process meetings into decisions, tasks, and risk insights.
 
-Runs 5 specialized agents in sequence on any meeting transcript and returns:
+---
 
-| Output field | Description |
-|---|---|
-| `meeting_summary` | 3–4 line concise summary |
-| `decisions[]` | Every decision with context and sensitivity |
-| `tasks[]` | Actionable tasks with owner, deadline, priority, dependencies |
-| `sensitivity` | PUBLIC / INTERNAL / CONFIDENTIAL / RESTRICTED per item |
-| `allowed_roles[]` | RBAC access control per task |
-| `masked_preview` | Redacted version safe for unauthorized viewers |
-| `unassigned_tasks[]` | Items with no owner and reason |
-| `risks_or_blockers[]` | Detected risks with severity and suggested solutions |
-| `monitoring_insights` | Delay predictions, overdue flags, REMINDER/ESCALATION/REASSIGN actions |
+## ✨ Key Features
 
-## Agent architecture
+* 🤖 **5 specialized AI agents** working in sequence
+* 📄 Converts unstructured text → structured JSON
+* 🔐 Built-in **RBAC (role-based access control)**
+* ⚠️ Detects **risks, blockers, and delays**
+* 📊 Generates **monitoring insights & escalation actions**
+* 🧾 Supports **JSON, Markdown, CSV exports**
+* ⚡ Async pipeline (~40% faster execution)
+* 🌐 CLI + API + Streamlit UI support
+
+---
+
+## 📌 Output Structure
+
+The pipeline generates:
+
+* **Meeting Summary** → concise overview
+* **Decisions** → extracted with context & sensitivity
+* **Tasks** → with owner, deadline, priority, dependencies
+* **Unassigned Tasks** → flagged with reasons
+* **Sensitivity Levels** → PUBLIC / INTERNAL / CONFIDENTIAL / RESTRICTED
+* **RBAC Roles** → access control per task
+* **Masked Preview** → safe redacted text
+* **Risks & Blockers** → with severity + solutions
+* **Monitoring Insights** → reminders, escalations, delay predictions
+
+---
+
+## 🏗️ Architecture
 
 ```
 Transcript
     │
     ▼
-[Agent 1] Comprehension   →  meeting_summary
+[Comprehension Agent] → Summary
     │
     ▼
-[Agent 2] Extraction      →  decisions[], tasks[], unassigned_tasks[]
+[Extraction Agent] → Decisions + Tasks
     │
     ▼
-[Agent 3] Classification  →  sensitivity, allowed_roles[], masked_preview
+[Classification Agent] → Sensitivity + RBAC
     │
     ▼
-[Agent 4] Risk Detection  →  risks_or_blockers[]
+[Risk Agent] → Risks & Blockers
     │
     ▼
-[Agent 5] Monitoring      →  monitoring_insights{}
+[Monitoring Agent] → Insights & Alerts
     │
     ▼
-[Validator] Schema check  →  validated JSON output
+[Validator] → Final Structured JSON
 ```
 
-## Setup
+---
 
-### 1. Clone the repo
+## ⚙️ Setup
+
+### 1. Clone the repository
+
 ```bash
 git clone https://github.com/YOUR_USERNAME/meeting-agent-pipeline.git
 cd meeting-agent-pipeline
 ```
 
-### 2. Create a virtual environment
+### 2. Create virtual environment
+
 ```bash
 python -m venv venv
-source venv/bin/activate      # macOS/Linux
-venv\Scripts\activate         # Windows
+venv\Scripts\activate     # Windows
 ```
 
 ### 3. Install dependencies
+
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Set your API key
+### 4. Configure environment variables
+
 ```bash
 cp .env.example .env
-# Edit .env and add your Anthropic API key
 ```
 
-The pipeline uses the `ANTHROPIC_API_KEY` environment variable. You can also export it directly:
+Edit `.env`:
+
+```env
+GEMINI_API_KEY=your_api_key_here
+```
+
+---
+
+## 🚀 Usage
+
+### CLI
+
 ```bash
-export ANTHROPIC_API_KEY=sk-ant-...
+python -m cli.run examples/q3_product_hr_sync.txt --date 2025-07-14
 ```
 
-## Usage
+Save output:
 
-### From the command line
 ```bash
-# Run on a transcript file
-python -m src.pipeline examples/q3_product_hr_sync.txt
-
-# With a meeting date (resolves relative deadlines like "Friday" → "2025-07-18")
-python -m src.pipeline examples/q3_product_hr_sync.txt 2025-07-14
-
-# Save output to a file
-python -m src.pipeline examples/q3_product_hr_sync.txt 2025-07-14 > output.json
+python -m cli.run examples/q3_product_hr_sync.txt --date 2025-07-14 > output.json
 ```
 
-### From Python
+---
+
+### Python API
+
 ```python
 from src.pipeline import run_pipeline
 
@@ -98,131 +125,126 @@ Priya: HR will send the revised salary bands to James by Thursday. Keep those co
 """
 
 result = run_pipeline(transcript, meeting_date="2025-07-14")
+
 print(result["meeting_summary"])
 print(result["tasks"])
 ```
 
-## Running tests
+---
+
+### 🌐 Streamlit UI
+
+```bash
+streamlit run ui/app.py
+```
+
+---
+
+## 🧪 Testing
+
 ```bash
 pytest tests/ -v
 ```
 
-Tests cover:
-- Date normalization (relative → absolute ISO dates)
-- Schema validation (all required fields, valid enum values)
+✔ Covers:
 
-No API calls are made during tests — all test cases use local logic only.
+* Date normalization
+* Schema validation
+* Export + webhook logic
 
-## Project structure
+(No external API calls used in tests)
+
+---
+
+## 📂 Project Structure
 
 ```
 meeting-agent-pipeline/
-├── src/
-│   ├── pipeline.py              # Sequential orchestrator (5 agents)
-│   ├── pipeline_async.py        # Async orchestrator (~40% faster)
-│   ├── batch.py                 # Batch-process folders of transcripts
-│   ├── config.py                # Central config (env vars + .env)
-│   ├── exporters.py             # Export to JSON / Markdown / CSV
-│   ├── webhook.py               # Webhook notifier + Slack formatter
-│   ├── agents/
-│   │   ├── comprehension_agent.py
-│   │   ├── extraction_agent.py
-│   │   ├── classification_agent.py
-│   │   ├── risk_agent.py
-│   │   └── monitoring_agent.py
-│   └── utils/
-│       ├── date_normalizer.py
-│       └── schema_validator.py
-├── api/
-│   └── server.py                # FastAPI REST server
-├── cli/
-│   └── run.py                   # Rich terminal CLI
-├── ui/
-│   └── app.py                   # Streamlit web UI
-├── examples/
-│   ├── q3_product_hr_sync.txt
-│   └── client_proposal_short.txt
-├── tests/
-│   ├── test_pipeline.py
-│   ├── test_extended.py
-│   └── test_exporters_and_webhook.py
-├── .github/workflows/ci.yml     # GitHub Actions CI
-├── .env.example
-├── .gitignore
-├── docker-compose.yml
-├── Dockerfile
-├── pyproject.toml
-├── requirements.txt
-├── CONTRIBUTING.md
-└── README.md
+├── src/        # Core pipeline + agents  
+├── cli/        # Command-line interface  
+├── api/        # FastAPI backend  
+├── ui/         # Streamlit frontend  
+├── tests/      # Unit tests  
+├── examples/   # Sample transcripts  
 ```
 
-## Export formats
+---
 
-```bash
-# Export to Markdown report
-python -m src.pipeline examples/q3_product_hr_sync.txt > /dev/null  # or use API
+## 📤 Exporting Results
 
-# From Python
-from src.exporters import export, export_all
+```python
+from src.exporters import export_all
 
-export(result, "markdown", "outputs/report.md")
-export(result, "csv",      "outputs/tasks.csv")
-export_all(result, "outputs/", "my_meeting")  # writes .json, .md, .csv
+export_all(result, "outputs/", "meeting")
 ```
 
-## Batch processing
+Outputs:
 
-```bash
-# Process a whole folder of transcripts
-python -m src.batch --input transcripts/ --output outputs/batch/ --date 2025-07-14
+* JSON
+* Markdown report
+* CSV (tasks)
 
-# With parallel workers and all export formats
-python -m src.batch --input transcripts/ --workers 6 --format all
-```
+---
 
-## Async pipeline (faster)
+## ⚡ Async Pipeline
 
 ```python
 from src.pipeline_async import run_pipeline_async_sync
 
-result = run_pipeline_async_sync(transcript, meeting_date="2025-07-14")
+result = run_pipeline_async_sync(transcript)
 ```
 
-Agents 1 and 2 run concurrently, then agents 3 and 4 run concurrently — typically ~40% faster than sequential.
+👉 ~40% faster via parallel agent execution
 
-## Webhooks
+---
 
-```bash
-# Enable in .env
+## 🔔 Webhook Integration
+
+```env
 WEBHOOK_ENABLED=true
-WEBHOOK_URL=https://hooks.slack.com/services/your/webhook/url
-WEBHOOK_ON_EVENTS=pipeline_complete,high_risk_detected,restricted_detected
+WEBHOOK_URL=your_url
 ```
 
-```python
-from src.webhook import notify_from_env, to_slack_blocks
+Supports:
 
-# Auto-fire based on .env config
-notify_from_env(result)
+* Slack notifications
+* Event-based triggers
 
-# Or format as Slack Block Kit and POST manually
-blocks = to_slack_blocks(result)
-```
+---
 
-## Sensitivity & RBAC
+## 🔐 Sensitivity Levels
 
-| Level | Examples | Allowed roles |
-|---|---|---|
-| `PUBLIC` | General announcements | ALL |
-| `INTERNAL` | Sprint plans, onboarding | TEAM, MANAGER |
-| `CONFIDENTIAL` | Client deals, budgets, vendor contracts | MANAGER, ADMIN |
-| `RESTRICTED` | Salary, compensation, HR/legal | ADMIN, HR |
+| Level        | Access     |
+| ------------ | ---------- |
+| PUBLIC       | Everyone   |
+| INTERNAL     | Team       |
+| CONFIDENTIAL | Managers   |
+| RESTRICTED   | Admin / HR |
 
-Every task also carries a `masked_preview` — a redacted version of the title that is safe to show to users who lack access.
+---
 
-## Notes
+## 💡 Why this project?
 
-- All agents call `claude-sonnet-4-20250514` by default. You can change the `model` parameter in any agent's `__init__`.
-- The pipeline makes 6 sequential API calls per transcript (one per agent + 2 classification passes).
-- Date normalization requires passing `meeting_date` as `YYYY-MM-DD`. Without it, relative deadlines like "Friday" are preserved as-is.
+This project demonstrates:
+
+* Multi-agent system design
+* LLM orchestration
+* Real-world workflow automation
+* Secure data handling (RBAC)
+* Production-ready architecture (CLI + API + UI)
+
+---
+
+## 🧑‍💻 Author
+
+**Mauli Kukreti**
+B.Tech CSE | Aspiring Software Developer
+
+---
+
+## ⭐ Future Improvements
+
+* OpenAI / multi-model fallback
+* Real-time meeting ingestion
+* Dashboard for analytics
+* Deployment (AWS / Docker)
