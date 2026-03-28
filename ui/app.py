@@ -50,6 +50,24 @@ ACTION_COLORS = {
     "REASSIGN":   "#534AB7",
 }
 
+SEVERITY_ICONS = {
+    "HIGH":   "🔴",
+    "MEDIUM": "🟡",
+    "LOW":    "🟢",
+}
+
+PRIORITY_ICONS = {
+    "HIGH":   "🔴",
+    "MEDIUM": "🟡",
+    "LOW":    "🟢",
+}
+
+ACTION_ICONS = {
+    "ESCALATION": "🚨",
+    "REMINDER":   "⏰",
+    "REASSIGN":   "🔄",
+}
+
 def badge(text: str, color: str) -> str:
     return (
         f'<span style="background:{color}22;color:{color};'
@@ -131,7 +149,7 @@ if run_btn:
     for d in result["decisions"]:
         color = SENSITIVITY_COLORS.get(d["sensitivity"], "#888")
         st.markdown(
-            f'{badge(d["sensitivity"], color)} &nbsp; **{d["decision"]}**<br>'
+            f'{badge(d["sensitivity"], color)} &nbsp; <strong>{d["decision"]}</strong><br>'
             f'<span style="color:#888;font-size:13px">{d["context"]}</span>',
             unsafe_allow_html=True,
         )
@@ -142,13 +160,16 @@ if run_btn:
     for t in tasks:
         pc = PRIORITY_COLORS.get(t["priority"], "#888")
         sc = SENSITIVITY_COLORS.get(t["sensitivity"], "#888")
-        with st.expander(f"{t['task_id']} — {t['task_title']}"):
+        pi = PRIORITY_ICONS.get(t["priority"], "")
+        # Plain text label for expander — no HTML allowed here
+        expander_label = f"{t['task_id']} — {t['task_title']}  |  {pi} {t['priority']}  ·  {t['sensitivity']}"
+        with st.expander(expander_label):
             col_a, col_b = st.columns(2)
             with col_a:
                 st.markdown(f"**Owner:** {t['owner']}")
                 st.markdown(f"**Deadline:** {t['deadline']}")
                 st.markdown(
-                    f"**Priority:** {badge(t['priority'], pc)} &nbsp; "
+                    f"**Priority:** {badge(t['priority'], pc)} &nbsp;&nbsp; "
                     f"**Sensitivity:** {badge(t['sensitivity'], sc)}",
                     unsafe_allow_html=True,
                 )
@@ -172,21 +193,28 @@ if run_btn:
     st.subheader("Risks and blockers")
     for r in result["risks_or_blockers"]:
         sc = SEVERITY_COLORS.get(r["severity"], "#888")
-        with st.expander(
-            f"{badge(r['severity'], sc)} &emsp; {r['issue']}",
-            expanded=(r["severity"] == "HIGH"),
-        ):
-            st.markdown(f"**Suggested solution:** {r['suggested_solution']}", unsafe_allow_html=True)
+        icon = SEVERITY_ICONS.get(r["severity"], "")
+        # Plain text expander label — no HTML
+        expander_label = f"{icon} {r['severity']}  —  {r['issue']}"
+        with st.expander(expander_label, expanded=(r["severity"] == "HIGH")):
+            st.markdown(f"**Suggested solution:** {r['suggested_solution']}")
 
     # ── Monitoring ────────────────────────────────────────────────────────────
     st.subheader("Monitoring insights")
     insights = result["monitoring_insights"]
     if insights["overdue_risk_tasks"]:
         st.error(f"Overdue-risk tasks: {', '.join(insights['overdue_risk_tasks'])}")
+
+    if insights.get("potential_delays"):
+        with st.expander("Potential delays"):
+            for d in insights["potential_delays"]:
+                st.markdown(f"- {d}")
+
     for action in insights["recommended_actions"]:
         ac = ACTION_COLORS.get(action["action"], "#888")
+        icon = ACTION_ICONS.get(action["action"], "")
         st.markdown(
-            f"{badge(action['action'], ac)} &nbsp; **{action['task_id']}** — {action['reason']}",
+            f"{badge(action['action'], ac)} &nbsp; <strong>{action['task_id']}</strong> — {action['reason']}",
             unsafe_allow_html=True,
         )
 
